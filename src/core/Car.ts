@@ -18,10 +18,10 @@ export class Car {
   // Physics properties
   private velocity: THREE.Vector3;
   private acceleration: THREE.Vector3;
-  private maxSpeed = 10;
+  private maxSpeed = 20;
   private speedMultiplier = 1.0; // Modifier for on-road/off-road
   private dragCoefficient = 0.5; // Base drag when wheels are missing
-  private rollingFrictionCoefficient = 0.01; // Normal rolling resistance
+  private rollingFrictionCoefficient = 0.8; // Normal rolling resistance (increased for faster deceleration)
   private groundFrictionCoefficient = 0.6; // Friction when dragging on ground
 
   // Car dimensions
@@ -126,7 +126,7 @@ export class Car {
 
     // Rotate wheels based on velocity
     const speed = this.velocity.length();
-    attachedWheels.forEach(wheel => {
+    attachedWheels.forEach((wheel) => {
       wheel.rotate(deltaTime, speed);
     });
 
@@ -181,7 +181,7 @@ export class Car {
   }
 
   private getAttachedWheels(): Wheel[] {
-    return Array.from(this.wheels.values()).filter(wheel => wheel.isAttached);
+    return Array.from(this.wheels.values()).filter((wheel) => wheel.isAttached);
   }
 
   public damageWheel(position: WheelPosition, amount: number): void {

@@ -414,7 +414,7 @@ export class Game {
   private handleInput(deltaTime: number): void {
     if (!this.car) return;
 
-    const accelerationForce = 2.0;
+    const accelerationForce = 8.0; // Increased to overcome higher friction
     const arcadeSpeed = 5.0; // Arcade-style left/right speed (units per second)
     const force = new THREE.Vector3(0, 0, 0);
 
@@ -434,8 +434,11 @@ export class Game {
     }
 
     // Arcade-style left/right movement (instant, no momentum)
+    // Movement amount scales with forward speed
     const carPos = this.car.group.position;
-    const moveDistance = arcadeSpeed * deltaTime;
+    const currentSpeed = Math.abs(this.car.getVelocity().z); // Forward speed
+    const speedRatio = Math.min(currentSpeed / 10, 1.0); // Normalize to 0-1 (10 is typical top speed)
+    const moveDistance = arcadeSpeed * deltaTime * speedRatio;
 
     if (this.keys.has('a') || this.keys.has('arrowleft')) {
       carPos.x -= moveDistance;
@@ -620,8 +623,43 @@ export class Game {
     }
   }
 
+  private updateConeLabels(): void {
+    const cones = this.obstacleManager.getCones();
+    const app = document.getElementById('app');
+    const width = app?.clientWidth || window.innerWidth;
+    const height = app?.clientHeight || window.innerHeight;
+
+    for (const cone of cones) {
+      if (!cone.labelElement) continue;
+
+      // Get 3D position above cone
+      const labelPosition = cone.mesh.position.clone();
+      labelPosition.y += cone.getHeight() + 0.5; // Position above cone
+
+      // Project to 2D screen coordinates
+      const vector = labelPosition.clone();
+      vector.project(this.camera);
+
+      // Convert to screen coordinates
+      const x = (vector.x * 0.5 + 0.5) * width;
+      const y = (-(vector.y * 0.5) + 0.5) * height;
+
+      // Hide label if cone is behind camera or too far
+      if (vector.z > 1 || vector.z < -1) {
+        cone.labelElement.style.display = 'none';
+      } else {
+        cone.labelElement.style.display = 'block';
+        cone.labelElement.style.left = `${x}px`;
+        cone.labelElement.style.top = `${y}px`;
+      }
+    }
+  }
+
   private render(): void {
     this.renderer.render(this.scene, this.camera);
+
+    // Update cone labels
+    this.updateConeLabels();
 
     // Update debug info
     if (this.fpsElement) {
