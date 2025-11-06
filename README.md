@@ -1,6 +1,8 @@
 # Attack of Cones 🚗🚧
 
-A fun 3D vertical scroller game where you navigate through traffic cones while avoiding (or hitting) them!
+A fun 3D vertical scroller game built with Three.js where you navigate through traffic cones while avoiding (or hitting) them!
+
+[Play Now](https://attack-of-the-cones.vercel.app) | [GitHub](https://github.com/dbhagen/attack-of-the-cones)
 
 ## Game Modes
 
