@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(npm run dev:*)",
+      "mcp__chrome-devtools",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__new_page",
+      "Bash(lsof:*)",
+      "Bash(pkill:*)",
+      "WebSearch"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
