@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { Car } from './Car';
-import { WheelPosition } from './Wheel';
-import { RoadGenerator, RoadSegment } from './RoadGenerator';
+import { RoadGenerator } from './RoadGenerator';
 import { DifficultyManager } from './DifficultyManager';
 import { ObstacleManager, GameMode } from './ObstacleManager';
 
@@ -302,6 +301,9 @@ export class Game {
       // Check for collisions with world boundaries
       this.checkWorldCollisions();
 
+      // Update cone animations
+      this.updateCones(deltaTime);
+
       // Check for cone collisions and near misses
       this.checkConeCollisions();
 
@@ -309,8 +311,29 @@ export class Game {
       this.updateWorldBoundaries();
 
       // Update camera to follow car
-      this.updateCameraFollow(deltaTime);
+      this.updateCameraFollow();
     }
+  }
+
+  private updateCones(deltaTime: number): void {
+    const cones = this.obstacleManager.getCones();
+
+    // Update all cones
+    for (const cone of cones) {
+      cone.update(deltaTime);
+    }
+
+    // Remove cones that have been hit for more than 3 seconds
+    const conesToRemove = cones.filter(cone => cone.shouldRemove());
+    conesToRemove.forEach(cone => {
+      this.scene.remove(cone.mesh);
+      cone.dispose();
+    });
+
+    // Remove from obstacle manager
+    conesToRemove.forEach(cone => {
+      this.obstacleManager.removeCone(cone);
+    });
   }
 
   private checkConeCollisions(): void {
@@ -318,8 +341,9 @@ export class Game {
 
     const carPos = this.car.group.position;
     const carRadius = 0.8; // Approximate car collision radius
+    const carVelocity = this.car.getVelocity();
 
-    const collision = this.obstacleManager.checkCollisions(carPos, carRadius);
+    const collision = this.obstacleManager.checkCollisions(carPos, carRadius, carVelocity);
 
     // Handle cone hit
     if (collision.coneHit) {
@@ -534,7 +558,7 @@ export class Game {
     }
   }
 
-  private updateCameraFollow(deltaTime: number): void {
+  private updateCameraFollow(): void {
     if (!this.car) return;
 
     const carPos = this.car.group.position;

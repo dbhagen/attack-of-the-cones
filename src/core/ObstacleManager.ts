@@ -54,11 +54,12 @@ export class ObstacleManager {
 
   public checkCollisions(
     carPosition: THREE.Vector3,
-    carRadius: number
+    carRadius: number,
+    carVelocity?: THREE.Vector3
   ): CollisionResult {
     const result: CollisionResult = {};
-    const hitDistance = carRadius + 0.3; // Distance for direct hit
-    const nearMissDistance = hitDistance + 0.5; // Near miss is slightly farther than hit
+    const hitDistance = carRadius + 0.8; // Distance for direct hit (increased for earlier detection)
+    const nearMissDistance = hitDistance + 0.6; // Near miss is slightly farther than hit
 
     for (const cone of this.cones) {
       // Skip cones that are already hit
@@ -68,7 +69,7 @@ export class ObstacleManager {
 
       // Direct hit - check this FIRST, even if cone was marked as near miss
       if (distance < hitDistance) {
-        cone.markAsHit();
+        cone.markAsHit(carVelocity);
         result.coneHit = cone;
         return result; // Only process one collision per frame
       }
@@ -112,6 +113,13 @@ export class ObstacleManager {
 
   public getNearMissCount(): number {
     return this.cones.filter(cone => cone.wasNearMiss).length;
+  }
+
+  public removeCone(cone: Cone): void {
+    const index = this.cones.indexOf(cone);
+    if (index > -1) {
+      this.cones.splice(index, 1);
+    }
   }
 
   public reset(): void {

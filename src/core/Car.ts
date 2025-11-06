@@ -12,7 +12,7 @@ export interface CarConfig {
 
 export class Car {
   public group: THREE.Group;
-  private chassis: THREE.Mesh;
+  private chassis!: THREE.Mesh;
   private wheels: Map<WheelPosition, Wheel>;
 
   // Physics properties
@@ -20,7 +20,6 @@ export class Car {
   private acceleration: THREE.Vector3;
   private maxSpeed = 20;
   private speedMultiplier = 1.0; // Modifier for on-road/off-road
-  private dragCoefficient = 0.5; // Base drag when wheels are missing
   private rollingFrictionCoefficient = 0.8; // Normal rolling resistance (increased for faster deceleration)
   private groundFrictionCoefficient = 0.6; // Friction when dragging on ground
 

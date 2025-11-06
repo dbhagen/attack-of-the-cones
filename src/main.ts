@@ -23,7 +23,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // HMR support
   if (import.meta.hot) {
-    import.meta.hot.accept('./core/Game', (newModule) => {
+    import.meta.hot.accept('./core/Game', () => {
       console.log('Hot reloading Game module...');
       // Could preserve game state here if needed
     });
