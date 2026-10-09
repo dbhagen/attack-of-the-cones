@@ -17,6 +17,7 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'jsdom',
+    // Pure-logic suites run in node: no test needs a DOM, so jsdom stays out of devDependencies.
+    environment: 'node',
   },
 });
