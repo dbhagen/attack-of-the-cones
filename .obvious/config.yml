@@ -1,0 +1,6 @@
+# Obvious repo policy — supported fields only.
+defaultBranch: main
+
+qa:
+  guidePaths:
+    - .obvious/QA.md
