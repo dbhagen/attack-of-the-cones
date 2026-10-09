@@ -1,36 +1,55 @@
 # QA — attack-of-the-cones
 
 What quality assurance exists, what can be verified headlessly today, and what
-cannot. Proof results below were captured on Node v20.20.2 against commit
-`62e3c61` (main) on 2026-10-09.
+cannot. Proof results below were captured on Node v20.20.2 against base
+`2734e81` (main: behavior tests via PR #15, vite ^7.2.1 / vitest ^4.0.7 via
+PR #11) on 2026-10-09; the original proof at `62e3c61` is in PR #10 history.
 
 ## Verifiable headlessly today
 
-| Check | Command | Status @ 62e3c61 |
+| Check | Command | Status @ 2734e81 |
 |---|---|---|
+| Clean install | `npm ci` | ✅ exit 0 (Node v20.20.2 / npm 10.8.2) |
 | Typecheck | `npm run typecheck` | ✅ passes |
 | Lint (0 warnings allowed) | `npm run lint` | ✅ passes |
-| Production build | `npm run build` | ✅ passes (dist: 498.61 kB JS / 8.87 kB HTML) |
+| Production build | `npm run build` | ✅ passes (dist: 498.51 kB JS / 8.87 kB HTML) |
+| Tests (vitest 4, node env) | `npm test -- --run` | ✅ passes (5 files / 33 tests, ~0.4 s) |
 
-`npm ci` note: on this repo's pre-provisioned sandbox the existing
-`node_modules` is root-owned, so `npm ci` hits `EACCES` when it tries to replace
-it. On any normal fresh clone `npm ci` works as documented in
-`.obvious/local-dev.md`; the typecheck/lint/build results above were produced
-with the lockfile-consistent installed tree (vite 5.4.21, vitest 1.6.1, three
-0.160.1).
+`npm ci` note: this repo's pre-provisioned sandbox originally shipped a
+root-owned `node_modules` that made `npm ci` fail with `EACCES`. Resolved
+2026-10-09 by removing the pre-baked tree (`sudo rm -rf node_modules`) — after
+that `npm ci` runs clean against the current lockfile.
 
-## Automated tests — arriving
+## Automated tests
 
-`npm test` (vitest, jsdom environment configured in `vite.config.ts`) does not
-run today: `jsdom` is not installed and there are no test files, so vitest exits
-with `MISSING DEPENDENCY 'jsdom'`. A parallel unit on this wave is repairing the
-test runner and adding tests; when that lands, update this section.
+`npm test -- --run` (vitest 4, node environment) passes: **5 test files /
+33 tests** (2026-10-09). The suites establish behavior, not implementation:
+
+- `src/core/DifficultyManager.test.ts` (7) — easiest-start config, monotonic
+  time/distance ramp, cap without overshoot, halfway point, reset
+- `src/core/ObstacleManager.test.ts` (14) — spawn spacing + difficulty scaling,
+  on-road placement, direct hit vs near miss vs out-of-range, overlap-is-hit,
+  no double-reporting, per-mode scoring (Daniel counts hits, Normal counts
+  unhit passed cones), cleanup behind the car, reset
+- `src/core/RoadGenerator.test.ts` (8) — segment chaining/geometry, straight
+  road at zero curve intensity, bounded curve corridor, ribbon mesh structure,
+  removal, reset
+- `src/core/gameLoop.smoke.test.ts` (1) — headless entry → logic → output:
+  difficulty ramp, road chaining, cone spawning, collision, scoring, cleanup
+- `src/utils/commitMessageGenerator.test.ts` (3) — deterministic conventional-
+  commit-shaped labels for a seeded random stream
+
+No `jsdom` dependency: the test block in `vite.config.ts` sets
+`environment: 'node'` because no suite needs a DOM.
 
 ## Boundary: the game runtime itself
 
-The 3D runtime — WebGL rendering via Three.js, the requestAnimationFrame loop,
-keyboard input, collision feel, camera follow, cone animations, HUD refresh —
-requires a real browser and cannot be verified headlessly here. Manual smoke
+The 3D presentation and interaction layer — WebGL rendering via Three.js, the
+requestAnimationFrame loop, keyboard input, collision feel, camera follow, cone
+animations, HUD refresh — requires a real browser and cannot be verified
+headlessly here. Pure game logic is now covered headlessly by the vitest suite
+(including the game-loop smoke test); what remains browser-only is rendering
+and interactive feel. Manual smoke
 path for a human or browser-automation session:
 
 1. `npm run dev` → http://localhost:3000 opens automatically.
@@ -53,3 +72,6 @@ implemented), and long-session memory behavior.
 Vercel builds and hosts the demo (`vercel.json`, GitHub integration):
 https://attack-of-the-cones.vercel.app — verified live (HTTP 200, page title
 "Attack of Cones") on 2026-10-09.
+
+No CI workflow exists on main yet (`.github/` is absent at `2734e81`); the
+gates above are the automation surface until a workflow lands.

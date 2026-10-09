@@ -14,8 +14,9 @@ https://attack-of-the-cones.vercel.app (Vercel).
 
 - TypeScript (strict; `noUnusedLocals`/`noUnusedParameters`) checked by `tsc`
 - Three.js ^0.160.0 for 3D rendering — the only runtime dependency
-- Vite ^5 for dev server and build (dev server: port 3000, auto-open)
-- Vitest for tests (jsdom environment configured in `vite.config.ts`)
+- Vite ^7.2.1 for dev server and build (dev server: port 3000, auto-open)
+- Vitest 4 for tests — node environment (`vite.config.ts` test block); the
+  pure-logic suites need no DOM, so jsdom is intentionally not a dependency
 - Vercel for deployment (`vercel.json`)
 
 ## Gate commands
@@ -30,10 +31,10 @@ npm run build          # tsc && vite build
 npm test               # vitest
 ```
 
-Note on `npm test`: vitest is configured (jsdom environment, `vite.config.ts`
-`test` block) but currently fails with `MISSING DEPENDENCY 'jsdom'` and there are
-no test files yet. A separate unit is repairing the test runner this wave —
-check current `package.json` and `git log` before relying on the test gate.
+All five gates exit 0 on Node v20.20.2 as of 2026-10-09 (base `2734e81`: behavior
+tests via PR #15, vite ^7.2.1 / vitest ^4.0.7 toolchain via PR #11). The suite
+runs in the node environment — 5 files / 33 tests, including a headless
+entry→logic→output game-loop smoke test (`src/core/gameLoop.smoke.test.ts`).
 
 ## Source layout
 
@@ -46,6 +47,7 @@ check current `package.json` and `git log` before relying on the test gate.
 - `src/core/RoadGenerator.ts` — procedural road: CatmullRomCurve3 segments from difficulty-driven control points, hand-built ribbon `BufferGeometry` meshes, segment recycling.
 - `src/core/DifficultyManager.ts` — difficulty parameters (curve intensity/frequency, obstacle frequency, road width, spawn rate) lerped by time (5 min to max) and distance (1000 units) with cubic easing.
 - `src/utils/commitMessageGenerator.ts` — random conventional-commit-style strings ("feat: STORY-1234 …") used as cone labels.
+- `src/**/*.test.ts` — behavior tests for pure game logic (difficulty ramp, cone spawning/collision/scoring, road geometry, commit-message format) and the headless game-loop smoke test.
 
 ## Conventions
 

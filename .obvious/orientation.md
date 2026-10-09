@@ -1,7 +1,11 @@
 # Orientation — attack-of-the-cones
 
 Codebase map for agents. Everything below is from direct reads of the source at
-commit `62e3c61` (main, 2026-10-09). Line numbers refer to that commit.
+commit `62e3c61` (main, 2026-10-09). Line numbers refer to that commit. The
+`src/core/*.ts` / `src/utils/*.ts` sources are unchanged through `2734e81`
+(only tests, `vite.config.ts`, and `package.json` moved), so the line
+references remain accurate; the test suites added by PR #15 now pin much of
+the behavior described below.
 
 ## Runtime architecture
 
@@ -62,18 +66,22 @@ Mode buttons are wired in the `Game` constructor (`Game.ts:140-155`).
 - Normal mode only: +10 per currently-unhit cone behind the car (`Game.ts:714-717`)
 - Displayed score = coneScore + nearMissBonus (+ avoided-cone bonus in Normal)
 
-## Observations worth a behavior test (code reads, not runtime-verified)
+## Observations and their test coverage (added by PR #15)
 
-- The avoided-cone bonus in Normal mode is recomputed live from unhit cones still
-  in the manager (`Game.ts:709-717`) while cones are culled 30 units behind the
-  car (`ObstacleManager.ts:87-96`), so part of the displayed score can decrease
-  over time. A behavior test pinning the intended scoring semantics would settle
-  whether this is a bug.
-- Collision detection is a single 3D distance check with a fixed 0.8 car radius
-  (`Game.ts:343`, `ObstacleManager.ts:68-74`); cone geometry/height is not considered.
+- Scoring semantics: `ObstacleManager.test.ts` ("scoring") pins that Normal mode
+  counts only unhit cones the car has already passed. Still unpinned: the
+  avoided-cone bonus is recomputed live from unhit cones still in the manager
+  (`Game.ts:709-717`) while cones are culled 30 units behind the car
+  (`ObstacleManager.ts:87-96`), so the displayed score can decrease over time —
+  whether that decay is intended remains an open question.
+- Collision semantics: `ObstacleManager.test.ts` ("checkCollisions") pins the
+  distance behavior (overlap = direct hit, never near miss; beyond the band
+  ignored). Still true and untested: cone geometry/height is not considered —
+  detection is a single 3D distance check with a fixed 0.8 car radius
+  (`Game.ts:343`, `ObstacleManager.ts:68-74`).
 
 ## Non-code but load-bearing
 
 - `vercel.json` — Vite framework, install/build/dev commands, output `dist`, SPA rewrites.
-- `vite.config.ts` — `@` alias, dev server port 3000 + `open: true`, ES2020 build target, sourcemaps, vitest config (jsdom).
+- `vite.config.ts` — `@` alias, dev server port 3000 + `open: true`, ES2020 build target, sourcemaps, vitest config (node environment, globals).
 - `Product.md` — original product spec; partially aspirational (see AGENTS.md).

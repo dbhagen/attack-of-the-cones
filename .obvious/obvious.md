@@ -11,9 +11,8 @@ procedurally generated road with progressive difficulty. Implemented behavior in
 
 ## Commands
 
-Verified on Node v20.20.2 / npm 10.8.2 — dated results and any current failures
-are recorded in `.obvious/QA.md`. Once the test-runner repair (PR #15) lands,
-all five exit 0 on Node 20.20.2:
+All five exit 0 on Node v20.20.2 / npm 10.8.2 (verified 2026-10-09; dated
+results in `.obvious/QA.md`):
 
 ```bash
 npm ci                # clean install from package-lock.json
@@ -23,11 +22,12 @@ npm run build         # tsc && vite build → dist/
 npm test -- --run     # vitest, single run
 ```
 
-Current state (2026-10-09, main @ 48d24b1): typecheck / lint / build pass;
-`npm test -- --run` fails with `MISSING DEPENDENCY 'jsdom'` — vitest is
-configured (`vite.config.ts` test block) but jsdom is not installed and no test
-files exist yet; PR #15 repairs this. Re-check `.obvious/QA.md` before relying
-on the test gate.
+Current state (2026-10-09, base `2734e81`): the vitest 4 suite runs in the node
+environment — 5 test files / 33 tests pass, including a headless
+entry→logic→output game-loop smoke test. The test-runner repair (PR #15) and
+the vite ^7.2.1 / vitest ^4.0.7 toolchain (PR #11) are merged on main. There
+is no CI workflow on main yet (`.github/` is absent at `2734e81`) — the
+automation surface today is these npm gates.
 
 ## Codebase map
 

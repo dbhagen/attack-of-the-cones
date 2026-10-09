@@ -1,7 +1,8 @@
 # Local Development — attack-of-the-cones
 
 Reproducible setup for a fresh checkout. Verified on Node v20.20.2 / npm 10.8.2
-(no `.nvmrc` is committed; any current Node 20 LTS should behave the same).
+(no `.nvmrc` is committed; vite ^7.2.1 requires Node `^20.19.0 || >=22.12.0` —
+engines field of the installed `vite` package — so Node ≥ 20.19 is required).
 
 ## Install
 
@@ -29,14 +30,14 @@ npm run preview   # serves the dist/ build locally
 ## Tests
 
 ```bash
-npm test          # vitest (single run in non-interactive shells)
+npm test -- --run # vitest, single run (plain `npm test` watches in a TTY)
 ```
 
-Current state (this wave): vitest is configured in `vite.config.ts` (jsdom
-environment) but `jsdom` is not installed and there are no test files, so the
-command fails today with `MISSING DEPENDENCY 'jsdom'`. A parallel unit on this
-wave is repairing the test runner and adding tests; treat the test gate as
-"arriving" until that lands.
+The suite passes: vitest 4 in the node environment (pure-logic suites need no
+DOM; jsdom is intentionally not a dependency) — 5 test files / 33 tests,
+including a headless entry→logic→output game-loop smoke test. Verified
+2026-10-09 on Node v20.20.2 (tests via PR #15, vite ^7.2.1 / vitest ^4.0.7 via
+PR #11).
 
 ## Static checks
 
