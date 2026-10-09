@@ -38,6 +38,13 @@ describe('ObstacleManager', () => {
     stubConeLabelDom();
     scene = new THREE.Scene();
     manager = new ObstacleManager();
+    // Fixed seed for the whole suite: generateConesForSegment draws Math.random
+    // for the cone count (1-3 per spawn event), the position along the curve,
+    // and the lateral offset. With the seed pinned to 0 every spawn event
+    // produces exactly one cone at the segment start point, offset to the left
+    // road edge, so exact spawn-cursor assertions are deterministic. Tests that
+    // need a different fixed stream re-spy with their own value.
+    vi.spyOn(Math, 'random').mockReturnValue(0);
   });
 
   afterEach(() => {
@@ -45,13 +52,12 @@ describe('ObstacleManager', () => {
     vi.unstubAllGlobals();
   });
 
-  // Deterministic spawn: with Math.random pinned to 0, a generating segment
-  // produces exactly one cone at the segment start point, offset by
-  // (0 - 0.5) * width on x.
+  // Deterministic spawn: the suite-wide seed (beforeEach) makes a generating
+  // segment produce exactly one cone at the segment start point, offset by
+  // (0 - 0.5) * width on x. The seed stays active for the whole test, so any
+  // later direct generateConesForSegment calls in the test are deterministic too.
   function spawnOneConeAt(startZ: number, difficulty = 0): Cone {
-    vi.spyOn(Math, 'random').mockReturnValue(0);
     manager.generateConesForSegment(makeStraightSegment(startZ), difficulty, scene);
-    vi.restoreAllMocks();
     return manager.getCones()[0];
   }
 
@@ -87,7 +93,6 @@ describe('ObstacleManager', () => {
       const hardScene = new THREE.Scene();
       const easyManager = new ObstacleManager();
       const hardManager = new ObstacleManager();
-      vi.spyOn(Math, 'random').mockReturnValue(0);
 
       // spacing: 15 at difficulty 0, 5 at difficulty 1
       easyManager.generateConesForSegment(makeStraightSegment(-20), 0, easyScene);
@@ -101,7 +106,9 @@ describe('ObstacleManager', () => {
     });
 
     it('places cones on the road surface inside the segment bounds', () => {
-      vi.spyOn(Math, 'random').mockReturnValue(0.2); // offset (0.2 - 0.5) * 3 = -0.9
+      // Override the suite-wide seed: curve position t=0.2 and lateral offset
+      // (0.2 - 0.5) * 3 = -0.9, still fully deterministic.
+      vi.spyOn(Math, 'random').mockReturnValue(0.2);
 
       const segment = makeStraightSegment(-20);
       manager.generateConesForSegment(segment, 0, scene);
