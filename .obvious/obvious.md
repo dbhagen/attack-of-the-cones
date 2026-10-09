@@ -1,7 +1,8 @@
 # Repository Context — attack-of-the-cones
 
 "Attack of Cones" is a browser-based 3D vertical-scroller driving game built with
-TypeScript, Three.js ^0.160, and Vite 5, deployed to
+TypeScript, Three.js ^0.160, and Vite 7 (Vite 5 baseline at review;
+`main` now runs Vite ^7.2.1 per PR #11), deployed to
 https://attack-of-the-cones.vercel.app via Vercel (`vercel.json` + GitHub
 integration — merges to `main` auto-deploy to production). Players pick Normal
 Mode (avoid cones: +10 per avoided cone, +5 near miss, −10 per hit) or Daniel
