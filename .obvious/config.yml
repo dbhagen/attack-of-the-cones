@@ -1,0 +1,61 @@
+# Obvious repo policy — schema: https://help.obvious.ai/autobuild/config-yml-reference
+# (retrieved 2026-10-09; page last updated 2026-09-24). Only documented, actively
+# consumed fields are present; reserved sections (notifications/release/owners/
+# runbooks) are deliberately omitted, as are preview/ci.automationPaths (nothing
+# to configure in this repo yet).
+
+branches:
+  defaultBase: main
+
+pr:
+  merge:
+    method: squash
+
+reviews:
+  automated:
+    enabled: true
+  routing:
+    rules:
+      - name: security-and-supply-chain
+        match:
+          - package.json
+          - package-lock.json
+          - .github/workflows/**
+          - .nvmrc
+        mode: specialized
+        reviewers:
+          - type: security
+      - name: game-behavior-core
+        match:
+          - src/core/Game.ts
+          - src/core/ObstacleManager.ts
+          - src/core/DifficultyManager.ts
+        mode: specialized
+        reviewers:
+          - type: general
+      - name: engine-and-entry
+        match:
+          - src/core/**
+          - src/utils/**
+          - src/main.ts
+          - index.html
+          - vite.config.ts
+        mode: single
+      - name: docs-and-repo-config
+        match:
+          - .obvious/**
+          - AGENTS.md
+          - README.md
+          - .gitignore
+        mode: single
+      - name: catch-all
+        match:
+          - '**'
+        mode: single
+
+triageProjects:
+  reviewProjectId: prj_BOIqpgvi
+
+qa:
+  guidePaths:
+    - .obvious/QA.md
